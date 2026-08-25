@@ -1,0 +1,93 @@
+scalar DateTime
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+type Resource {
+  id: ID!
+  name: String!
+  capacity: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  bookings(status: BookingStatus): [Booking!]!
+}
+
+type Booking {
+  id: ID!
+  title: String!
+  startTime: DateTime!
+  endTime: DateTime!
+  status: BookingStatus!
+  resourceId: ID!
+  resource: Resource!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+type BookingEdge {
+  cursor: String!
+  node: Booking!
+}
+
+type BookingConnection {
+  edges: [BookingEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type AvailabilityResult {
+  isAvailable: Boolean!
+  resourceId: ID!
+  startTime: DateTime!
+  endTime: DateTime!
+  conflictingBookings: [Booking!]!
+}
+
+input CreateResourceInput {
+  name: String!
+  capacity: Int!
+}
+
+input CreateBookingInput {
+  resourceId: ID!
+  title: String!
+  startTime: DateTime!
+  endTime: DateTime!
+}
+
+input RescheduleBookingInput {
+  id: ID!
+  startTime: DateTime!
+  endTime: DateTime!
+}
+
+input BookingFilterInput {
+  resourceId: ID
+  status: BookingStatus
+  startTimeGte: DateTime
+  endTimeLte: DateTime
+}
+
+type Query {
+  resources: [Resource!]!
+  resource(id: ID!): Resource
+  bookings(filter: BookingFilterInput, first: Int, after: String): BookingConnection!
+  checkAvailability(resourceId: ID!, startTime: DateTime!, endTime: DateTime!): AvailabilityResult!
+}
+
+type Mutation {
+  createResource(input: CreateResourceInput!): Resource!
+  createBooking(input: CreateBookingInput!): Booking!
+  rescheduleBooking(input: RescheduleBookingInput!): Booking!
+  cancelBooking(id: ID!): Booking!
+  deleteBooking(id: ID!): Boolean!
+}
